@@ -136,7 +136,7 @@ if os.path.isfile(os.environ['PBS_CONF_FILE']):
             os.environ[line.split('=')[0]] = line.split('=')[1].strip('\n')
     pbs_conf.close()
 else:
-    print 'Unable to find PBS_CONF_FILE ... ' + os.environ['PBS_CONF_FILE']
+    print('Unable to find PBS_CONF_FILE ... ' + os.environ['PBS_CONF_FILE'])
     sys.exit(1)
 
 pbsExec = os.environ['PBS_EXEC']
@@ -484,34 +484,71 @@ class ngpus(resource):
             ## The "response" is a dcgmDiagResponse structure that can be parsed for errors.
             response = dcgmGroup.action.RunDiagnostic(dcgm_structs.DCGM_DIAG_LVL_SHORT)
             #pbs.logmsg(pbs.EVENT_DEBUG, "response %s" % (response))
-                    
-            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.blacklist):
-                pbs.logmsg(pbs.EVENT_DEBUG, "Failed blacklist")
-                health_info.append('blacklist')
-            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.nvmlLibrary):
-                pbs.logmsg(pbs.EVENT_DEBUG, "Failed nvmlLibrary")
-                health_info.append('nvmlLibrary')
-            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.cudaMainLibrary):
-                pbs.logmsg(pbs.EVENT_DEBUG, "Failed cudaMainLibrary")
-                health_info.append('cudaMainLibrary')
-            #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.cudaRuntimeLibrary):
-            #    pbs.logmsg(pbs.EVENT_DEBUG, "Failed cudaRuntimeLibrary")
-            #    health_info.append('cudaRuntimeLibrary')
-            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.permissions):
-                pbs.logmsg(pbs.EVENT_DEBUG, "Failed permissions")
-                health_info.append('permissions')
-            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.persistenceMode):
-                pbs.logmsg(pbs.EVENT_DEBUG, "Failed persistenceMode")
-                health_info.append('persistenceMode')
-            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.environment):
-                pbs.logmsg(pbs.EVENT_DEBUG, "Failed environment")
-                health_info.append('environment')
-            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.pageRetirement):
-                pbs.logmsg(pbs.EVENT_DEBUG, "Failed pageRetirement")
-                health_info.append('pageRetirement')
-            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.graphicsProcesses):
-                pbs.logmsg(pbs.EVENT_DEBUG, "Failed graphicsProcesses")
-                health_info.append('graphicsProcesses')
+
+            ## DCGM encodes the version of structures as a bitshifted value
+            ## bitwise ORed with the size of the structure
+            dcgm_diagnostic_version= int((response.version & (255 << 24)) >> 24)
+
+
+            if (dcgm_diagnostic_version >= 4):
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_BLACKLIST].result):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed blacklist")
+                    health_info.append('blacklist')
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_NVML_LIBRARY].result):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed nvmlLibrary")
+                    health_info.append('nvmlLibrary')
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_CUDA_MAIN_LIBRARY].result):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed cudaMainLibrary")
+                    health_info.append('cudaMainLibrary')
+                #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_CUDA_RUNTIME_LIBRARY].result):
+                #    pbs.logmsg(pbs.EVENT_DEBUG, "Failed cudaRuntimeLibrary")
+                #    health_info.append('cudaRuntimeLibrary')
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_PERMISSIONS].result):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed permissions")
+                    health_info.append('permissions')
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_PERSISTENCE_MODE].result):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed persistenceMode")
+                    health_info.append('persistenceMode')
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_ENVIRONMENT].result):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed environment")
+                    health_info.append('environment')
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_PAGE_RETIREMENT].result):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed pageRetirement")
+                    health_info.append('pageRetirement')
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_GRAPHICS_PROCESSES].result):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed graphicsProcesses")
+                    health_info.append('graphicsProcesses')
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_INFOROM].result):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed inforom")
+                    health_info.append('inforom')
+            else:                     
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.blacklist):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed blacklist")
+                    health_info.append('blacklist')
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.nvmlLibrary):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed nvmlLibrary")
+                    health_info.append('nvmlLibrary')
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.cudaMainLibrary):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed cudaMainLibrary")
+                    health_info.append('cudaMainLibrary')
+                #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.cudaRuntimeLibrary):
+                #    pbs.logmsg(pbs.EVENT_DEBUG, "Failed cudaRuntimeLibrary")
+                #    health_info.append('cudaRuntimeLibrary')
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.permissions):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed permissions")
+                    health_info.append('permissions')
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.persistenceMode):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed persistenceMode")
+                    health_info.append('persistenceMode')
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.environment):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed environment")
+                    health_info.append('environment')
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.pageRetirement):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed pageRetirement")
+                    health_info.append('pageRetirement')
+                if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.graphicsProcesses):
+                    pbs.logmsg(pbs.EVENT_DEBUG, "Failed graphicsProcesses")
+                    health_info.append('graphicsProcesses')
         
     
             self.delete_group(dcgmHandle, dcgmGroup)
@@ -945,9 +982,9 @@ class ngpus(resource):
     
     
     def convert_dcgmStatSummaryInt32_t(self, info):
-        print 'convert_dcgmStatSummaryInt32_t'
-        print 'info', info
-        print 'info.minValue', info.minValue
+        print('convert_dcgmStatSummaryInt32_t')
+        print('info', info)
+        print('info.minValue', info.minValue)
         data = {}
         if self.get_defined_value(info.minValue) != None: data['minValue'] = info.minValue
         if self.get_defined_value(info.maxValue) != None: data['maxValue'] = info.maxValue

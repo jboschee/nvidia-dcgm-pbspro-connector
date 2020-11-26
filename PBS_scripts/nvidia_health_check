@@ -122,5 +122,5 @@ else:
 output['health'] = health
 output['comment'] = comment
 
-print json.dumps(output)
+print(json.dumps(output))
 

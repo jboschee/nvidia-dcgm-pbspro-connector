@@ -60,7 +60,7 @@ except:
         
 
 def show_usage():
-    print 'Usage: %s -g <grp_id list>' % os.path.basename(sys.argv[0])
+    print('Usage: %s -g <grp_id list>' % os.path.basename(sys.argv[0]))
 
 
 try:
@@ -107,10 +107,10 @@ def cleanup(grpIds):
         dcgmHandle = None
 
     else:
-        print "Module import error"
+        print("Module import error")
 
 
 cleanup(group_ids)
 
-print "Cleaned up group ids:",group_ids
+print("Cleaned up group ids:",group_ids)
 

@@ -54,7 +54,7 @@ import dcgmvalue
 
         
 def show_usage():
-    print 'Usage: %s -g <gpu_id list> -j <job id> -r <resource list>' % os.path.basename(sys.argv[0])
+    print('Usage: %s -g <gpu_id list> -j <job id> -r <resource list>' % os.path.basename(sys.argv[0]))
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], 'G:j:r:')
@@ -242,5 +242,5 @@ resource_string = '+'.join(gpus_info)
 
 delete_group(handleObj, groupObj)
 
-print json.dumps(resource_string)
+print(json.dumps(resource_string))
 

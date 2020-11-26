@@ -54,7 +54,7 @@ import dcgmvalue
 
         
 def show_usage():
-    print 'Usage: %s -g <gpu_id list> -j <job id> -w <walltime secs>' % os.path.basename(sys.argv[0])
+    print('Usage: %s -g <gpu_id list> -j <job id> -w <walltime secs>' % os.path.basename(sys.argv[0]))
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], 'g:j:w:')
@@ -79,8 +79,8 @@ if not (gpu_list and job_id and walltime_secs):
     sys.exit(1)
 
     
-#print 'gpu_list', gpu_list
-#print 'job_id', job_id
+#print('gpu_list', gpu_list)
+#print('job_id', job_id)
 
 
 def setup_dcgm_group(group_name, gpus):
@@ -96,7 +96,7 @@ def setup_dcgm_group(group_name, gpus):
         groupObj.AddGpu(int(gpu))
     
     gpuIds = groupObj.GetGpuIds() 
-    #print 'gpuIds %s' % (gpuIds)
+    #print('gpuIds %s' % (gpuIds))
     
     return handleObj, groupObj
     
@@ -108,5 +108,5 @@ groupObj.stats.WatchJobFields(1000000, int(walltime_secs), 0)
 # Notify DCGM to start collecting stats
 groupObj.stats.StartJobStats(job_id)
 
-print str(groupObj.GetId().value)
+print(str(groupObj.GetId().value))
 

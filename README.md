@@ -86,7 +86,7 @@ Various parameters are captured as mentioned in the config json file of the hook
 The following prerequisites must be met.
 
 - The Integration package supports PBS version 18.x or 19.x. PBS 2020 not integrate, yet.
-- DCGM v1.3.3 or later is installed. DCGM v2.x not integrated, yet. 
+- DCGM v1.3.3 or later is installed. 
 - datacenter-gpu-manager-375.41-1.x86_64.rpm or higher is installed with all the necessary NVIDIA packages.
 - nv-hostengine is running.
 - A shared directory location across the compute nodes and PBS server node.

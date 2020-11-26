@@ -60,7 +60,7 @@ except:
         
 
 def show_usage():
-    print 'Usage: %s -i <gpu_id list>' % os.path.basename(sys.argv[0])
+    print('Usage: %s -i <gpu_id list>' % os.path.basename(sys.argv[0]))
 
 
 try:
@@ -114,7 +114,7 @@ def diagnose(grpName, gpuIds):
 
         ## Debug: Invoke method to get gpu IDs of the members of the newly-created group
         #groupGpuIds = dcgmGroup.GetGpuIds()
-    
+
         ## This will go ahead and perform a "prologue" diagnostic
         ## to make sure everything is ready to run
         ## currently this calls an outside diagnostic binary but eventually
@@ -122,24 +122,51 @@ def diagnose(grpName, gpuIds):
         ## The "response" is a dcgmDiagResponse structure that can be parsed for errors.
         response = dcgmGroup.action.RunDiagnostic(dcgm_structs.DCGM_DIAG_LVL_SHORT)
 
-        if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.blacklist):
-            health_info.append('blacklist')
-        if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.nvmlLibrary):
-            health_info.append('nvmlLibrary')
-        if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.cudaMainLibrary):
-            health_info.append('cudaMainLibrary')
-        #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.cudaRuntimeLibrary):
-            #    health_info.append('cudaRuntimeLibrary')
-        if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.permissions):
-            health_info.append('permissions')
-        #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.persistenceMode):
-            #    health_info.append('persistenceMode')
-        #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.environment):
-            #    health_info.append('environment')
-        #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.pageRetirement):
-            #    health_info.append('pageRetirement')
-        #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.graphicsProcesses):
-            #    health_info.append('graphicsProcesses')                
+        ## DCGM encodes the version of structures as a bitshifted value
+        ## bitwise ORed with the size of the structure
+        dcgm_diagnostic_version= int((response.version & (255 << 24)) >> 24)
+
+
+        if (dcgm_diagnostic_version >= 4):
+            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_BLACKLIST].result):
+                health_info.append('blacklist')
+            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_NVML_LIBRARY].result):
+                health_info.append('nvmlLibrary')
+            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_CUDA_MAIN_LIBRARY].result):
+                health_info.append('cudaMainLibrary')
+            #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_CUDA_RUNTIME_LIBRARY].result):
+                #    health_info.append('cudaRuntimeLibrary')
+            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_PERMISSIONS].result):
+                health_info.append('permissions')
+            #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_PERSISTENCE_MODE].result):
+                #    health_info.append('persistenceMode')
+            #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_ENVIRONMENT].result):
+                #    health_info.append('environment')
+            #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_PAGE_RETIREMENT].result):
+                #    health_info.append('pageRetirement')
+            #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_GRAPHICS_PROCESSES].result):
+                #    health_info.append('graphicsProcesses')                
+            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.levelOneResults[dcgm_structs.DCGM_SWTEST_INFOROM].result):
+                health_info.append('inforom')
+        else:
+            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.blacklist):
+                health_info.append('blacklist')
+            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.nvmlLibrary):
+                health_info.append('nvmlLibrary')
+            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.cudaMainLibrary):
+                health_info.append('cudaMainLibrary')
+            #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.cudaRuntimeLibrary):
+                #    health_info.append('cudaRuntimeLibrary')
+            if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.permissions):
+                health_info.append('permissions')
+            #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.persistenceMode):
+                #    health_info.append('persistenceMode')
+            #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.environment):
+                #    health_info.append('environment')
+            #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.pageRetirement):
+                #    health_info.append('pageRetirement')
+            #if (dcgm_structs.DCGM_DIAG_RESULT_PASS !=  response.graphicsProcesses):
+                #    health_info.append('graphicsProcesses')                
     
         delete_group(health_info, dcgmGroup)
     else:
@@ -149,5 +176,5 @@ def diagnose(grpName, gpuIds):
 for i in range(len(gpu_ids)):
     diagnose("gpu-diag-test", gpu_ids[i])
 
-print json.dumps(health_info)
+print(json.dumps(health_info))
 
